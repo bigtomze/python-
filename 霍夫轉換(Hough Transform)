@@ -1,0 +1,67 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import drive
+
+
+# 掛載Google Drive
+drive.mount('/content/drive')
+
+
+# 讀取存在Google Drive中的檔案
+lanes_image_path = '/content/drive/MyDrive/期末報告/DIP_Final_Project_Images/Traffic_Lanes.bmp'
+cans_image_path = '/content/drive/MyDrive/期末報告/DIP_Final_Project_Images/Cans.bmp'
+
+
+# 讀取影像
+lanes_image = cv2.imread(lanes_image_path)
+cans_image = cv2.imread(cans_image_path)
+
+
+# 檢查是否成功讀取影像
+if lanes_image is None or cans_image is None:
+   print("Error: Unable to read the images.")
+else:
+   # 對Traffic_Lanes.bmp進行直線偵測(Line Detection)
+   gray_lanes = cv2.cvtColor(lanes_image, cv2.COLOR_BGR2GRAY)
+   edges_lanes = cv2.Canny(gray_lanes, 50, 150)
+   lines_lanes = cv2.HoughLinesP(edges_lanes, 1, np.pi/180, threshold=50, minLineLength=50, maxLineGap=5)
+
+
+   # 對Cans.bmp進行圓形偵測(Circle Detection)
+   gray_cans = cv2.cvtColor(cans_image, cv2.COLOR_BGR2GRAY)
+   circles_cans = cv2.HoughCircles(gray_cans, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=10, maxRadius=50)
+
+
+   # 繪製直線及圓形
+   lanes_image_lines = lanes_image.copy()
+   if lines_lanes is not None:
+       for line in lines_lanes:
+           x1, y1, x2, y2 = line[0]
+           cv2.line(lanes_image_lines, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+
+   cans_image_circles = cans_image.copy()
+   if circles_cans is not None:
+       circles_cans = np.uint16(np.around(circles_cans))
+       for circle in circles_cans[0, :]:
+           cv2.circle(cans_image_circles, (circle[0], circle[1]), circle[2], (0, 255, 0), 2)
+
+
+   # 顯示結果
+   plt.figure(figsize=(12, 5))
+
+
+   plt.subplot(231), plt.imshow(cv2.cvtColor(lanes_image, cv2.COLOR_BGR2RGB)), plt.title('Original Lanes Image')
+   plt.subplot(232), plt.imshow(edges_lanes, cmap='gray'), plt.title('Canny Edge Detection')
+   plt.subplot(233), plt.imshow(cv2.cvtColor(lanes_image_lines, cv2.COLOR_BGR2RGB)), plt.title('Detected Lines')
+
+
+   plt.subplot(234), plt.imshow(cv2.cvtColor(cans_image, cv2.COLOR_BGR2RGB)), plt.title('Original Cans Image')
+   plt.subplot(235), plt.imshow(gray_cans, cmap='gray'), plt.title('Grayscale Image')
+   plt.subplot(236), plt.imshow(cv2.cvtColor(cans_image_circles, cv2.COLOR_BGR2RGB)), plt.title('Detected Circles')
+
+
+   plt.show()
+
+
