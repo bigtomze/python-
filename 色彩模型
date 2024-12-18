@@ -1,0 +1,27 @@
+import cv2
+import matplotlib.pyplot as plt
+from google.colab import drive
+
+
+# 掛載Google Drive
+drive.mount('/content/drive')
+
+
+# 讀取存在Google Drive中的檔案
+image_path = '/content/drive/MyDrive/期末報告/DIP_Final_Project_Images/Rose.bmp'
+
+
+# 讀取影像
+image = cv2.imread(image_path)
+
+
+# 檢查是否成功讀取影像
+if image is None:
+   print("Error: Unable to read the image.")
+else:
+   # 轉換成不同色彩模型
+   rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+
+   # RGB to CMY 轉換
+   cmy_image = 255 - rgb_image
